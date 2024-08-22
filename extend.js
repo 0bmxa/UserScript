@@ -379,7 +379,7 @@ Extensions.HTMLElement = {
     /// Usage: applyStyle({ fontSize: '12px, color: 'green !important' });
     applyStyle(style = {}) {
         for (const key in style) {
-            const property = key.matches('[A-Z]') ? _(key).kebabFromCamelCase() : key;
+            const property = _(key).matches('[A-Z]') ? _(key).kebabFromCamelCase() : key;
     	    const [value, priority] = style[key].split(' !');
 		    this.style.setProperty(key, value, priority);
         }
