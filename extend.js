@@ -34,7 +34,7 @@ Extensions.Number = {
 
 Extensions.String = {
     capitalized() {
-        return this.replaceAll(/^./g, char => chat.toUpperCase());
+        return this.replaceAll(/^./g, char => char.toUpperCase());
     },
 
     kebabFromCamelCase() {
