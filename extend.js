@@ -34,8 +34,11 @@ Extensions.Number = {
 
 Extensions.String = {
     capitalized() {
-        // return this.replace(/^./, c => c.toUpperCase());
-        return this.replaceAll(/^./g, c => c.toUpperCase());
+        return this.replaceAll(/^./g, char => chat.toUpperCase());
+    },
+
+    kebabFromCamelCase() {
+        return this.replaceAll(/([A-Z])/g, (char) => '-' + char.toLowerCase());
     },
 
     /// Whether the string is contained in the provided array.
@@ -43,7 +46,6 @@ Extensions.String = {
     /// Usage:
     /// - _(myValue).in(myArray)
     in(arrayLike) {
-        // return Array.prototype.includes.call(arrayLike, this.toString()); // TODO: remove toString()
         return Array.prototype.includes.call(arrayLike, this);
     },
 
@@ -374,16 +376,13 @@ Extensions.Document = {
 Extensions.HTMLElement = {
     /// ...
     ///
-    /// Usage:
-    /// -
+    /// Usage: applyStyle({ fontSize: '12px, color: 'green !important' });
     applyStyle(style = {}) {
-        //Object.keys(style).forEach(key => {
         for (const key in style) {
-            key.includes('-') ?
-                (this.style.setProperty(key, style[key])) :
-                (this.style[key] = style[key]);
+            const property = key.matches('[A-Z]') ? _(key).kebabFromCamelCase() : key;
+    	    const [value, priority] = style[key].split(' !');
+		    this.style.setProperty(key, value, priority);
         }
-        //});
     },
 
     /// ...
@@ -391,7 +390,6 @@ Extensions.HTMLElement = {
     /// Usage:
     /// -
     textAtSelector(selector) {
-        // return _(this.querySelector(selector)?.innerText);
         return this.querySelector(selector)?.innerText;
     },
 
