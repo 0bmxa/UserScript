@@ -592,6 +592,11 @@ Extensions.HTMLImageElement = {
             height: this.naturalHeight,
         };
     },
+
+    get aspectRatio() {
+        if (this.naturalHeight === 0) { return null; }
+        return this.naturalWidth / this.naturalHeight;
+    },
 };
 
 
