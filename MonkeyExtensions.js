@@ -65,10 +65,10 @@ const MonkeyExtensions = {
 
 
 // Export (copied from SunCalc)
-if (is(module) && is.object(exports)) {          // ??
-    module.exports = MonkeyExtensions;
-} else if (is.function(define) && define.amd) {  // ??
-    define(MonkeyExtensions);
-} else {
+// if (module) && is.object(exports)) {          // ??
+//     module.exports = MonkeyExtensions;
+// } else if (is.function(define) && define.amd) {  // ??
+//     define(MonkeyExtensions);
+// } else {
     window.MonkeyExtensions = MonkeyExtensions;
-}
+// }
