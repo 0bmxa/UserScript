@@ -366,8 +366,13 @@ Extensions.Document = {
             const ruleStr = `${selector} { ${styleStr} }`;
             sheet.insertRule(ruleStr, index);
         });
-        //document.adoptedStyleSheets.push(sheet);
-        this.adoptedStyleSheets.push(sheet);
+
+        if (is(this.adoptedStyleSheets.push)) {
+            return this.adoptedStyleSheets.push(sheet);
+        }
+        
+        const cssString = Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n');
+        _(this.documentElement).appendElement('style', { innerText: cssString, type: 'text/css' });
     },
 };
 
