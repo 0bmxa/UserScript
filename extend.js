@@ -864,16 +864,25 @@ const Enum = (obj) => new Proxy({}, {
 });
 */
 
+const ExtendJS = {
+    _,
+    is,
+    self,
+    Extensions,
+};
 
+/*
 // Export (copied from SunCalc)
 if (is(module) && is.object(exports)) {          // ??
     //console.debug('export: module');
-    module.exports = Extensions;
+    module.exports = ExtendJS;
 } else if (is.function(define) && define.amd) {  // ??
     //console.debug('export: define');
-    define(Extensions);
+    define(ExtendJS);
 } else {
     //console.debug('export: window');
-    window.Extensions = Extensions;
+    window.__ExtendJS = ExtendJS;
 }
+*/
+window.__ExtendJS = ExtendJS;
 
