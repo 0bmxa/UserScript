@@ -372,7 +372,7 @@ Extensions.Document = {
         }
         
         const cssString = Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n');
-        _(this.documentElement).appendElement('style', { innerText: cssString, type: 'text/css' });
+        _(this.documentElement).appendElement('style', { innerHTML: cssString, type: 'text/css' });
     },
 };
 
