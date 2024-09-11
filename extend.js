@@ -197,9 +197,13 @@ Extensions.Object = {
         return entries.map(([key, value], index) => transform(key, value, index));
     },
 
+    mapKeys(transform) {
+        const transformed = _(this).mapArray((key, value, index) => [transform(key, value, index), value]);
+        return Object.fromEntries(transformed);
+    },
+
     mapValues(transform) {
-        const entries = Object.entries(this);
-        const transformed = entries.map(([key, value], index) => [key, transform(value, key, index)]);
+        const transformed = _(this).mapArray((key, value, index) => [key, transform(value, key, index)]);
         return Object.fromEntries(transformed);
     },
 
@@ -362,7 +366,9 @@ Extensions.Document = {
     addStyleSheet(rules = {}) {
         const sheet = new CSSStyleSheet();
         _(rules).mapArray((selector, style, index) => {
-            const styleStr = _(style).join(': ', '; ');
+            const styleStr = _(style)
+                .mapKeys(key => _(key).kebabFromCamelCase())
+                .join(': ', '; ');
             const ruleStr = `${selector} { ${styleStr} }`;
             sheet.insertRule(ruleStr, index);
         });
@@ -370,7 +376,7 @@ Extensions.Document = {
         if (is(this.adoptedStyleSheets.push)) {
             return this.adoptedStyleSheets.push(sheet);
         }
-        
+
         const cssString = Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n');
         _(this.documentElement).appendElement('style', { innerHTML: cssString, type: 'text/css' });
     },
