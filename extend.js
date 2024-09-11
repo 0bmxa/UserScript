@@ -366,10 +366,9 @@ Extensions.Document = {
     addStyleSheet(rules = {}) {
         const sheet = new CSSStyleSheet();
         _(rules).mapArray((selector, style, index) => {
-            const styleStr = _(style)
-                .mapKeys(key => _(key).kebabFromCamelCase())
-                .join(': ', '; ');
-            const ruleStr = `${selector} { ${styleStr} }`;
+            const kebabStyle = _(style).mapKeys(key => _(key).kebabFromCamelCase());
+            const styleStr   = _(kebabStyle).join(': ', '; ');
+            const ruleStr    = `${selector} { ${styleStr} }`;
             sheet.insertRule(ruleStr, index);
         });
 
