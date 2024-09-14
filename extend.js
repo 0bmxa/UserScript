@@ -526,9 +526,9 @@ Extensions.HTMLElement = {
 
         //handle('style',      is.obj, (style) => _(this).applyStyle(style));
         //handle('attributes', is.obj, (attrs) => _(attrs).forEach((k,v) => this.setAttribute(k,v)));
-        handle('style',      is.obj, _(this).applyStyle);
-        handle('attributes', is.obj, (attrs) => _(attrs).forEach(this.setAttribute));
-        handle('classList',  is.arr, (list)  => list.forEach(this.classList.add));
+        handle('style',      is.obj,   _(this).applyStyle);
+        handle('attributes', is.obj,   (attrs) => _(attrs).forEach(this.setAttribute));
+        handle('classList',  is.array, (list)  => list.forEach(this.classList.add));
 
         // TODO: Does this properly catch 'path' elements??
         const isSVG = (this instanceof SVGElement);
