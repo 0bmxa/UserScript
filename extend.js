@@ -509,8 +509,8 @@ Extensions.Element = {
         const isHTML      = (this instanceof HTMLElement);
         const isProperty  = (name) => Reflect.has(this, name);
 
-        handle('attributes', is.obj,   (attrs) => _(attrs).forEach(this.setAttribute));
-        handle('classList',  is.array, (list)  => list.forEach(this.classList.add));
+        handle('attributes', is.obj,   (attrs) => _(attrs).forEach($0 => this.setAttribute($0)));
+        handle('classList',  is.array, (list)  => list.forEach($0 => this.classList.add($0)));
         if (isHTML) {
             handle('style',  is.obj,   _(this).applyStyle);
         }
