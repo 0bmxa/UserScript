@@ -540,10 +540,10 @@ Extensions.HTMLElement = {
 	       //      this.setAttribute(property, value));
         // }
 
-        const noProperty = (name) => Reflect.has(this, name) === false;
+        const isNoProperty = (name) => (Reflect.has(this, name) === false);
         _(properties).forEach((property, value) => {
-            (noProperty(property) || isSVG) ?
-	            this.setAttribute(property, value)) :
+            (isNoProperty(property) || isSVG) ?
+	        this.setAttribute(property, value) :
                 (this[property] = value);
         });
 },
