@@ -343,7 +343,7 @@ Extensions.Document = {
     /// - createElement('img', { src: '…' }, { load: (event) => … }));
     /// - createElement('div', { innerText: '…', style: { … } };
     createElement(tagName, properties = null, events = null) {
-	const namespace = properties.namespaceURI ?? document.documentElement.namespaceURI;
+	const namespace = properties?.namespaceURI ?? document.documentElement.namespaceURI;
 	const element = document.createElementNS(namespace, tagName);
 
         if (properties !== null) {
