@@ -418,9 +418,18 @@ Extensions.Element = {
     ///       appendChild('a', { innerText: '…' });
     ///       appendChild('span', { … });
     ///   });
-    appendElement(tagName, properties = null, events = null, childrenCallback = null) {
+    appendElement(tagName, properties = null, events = null, childrenFn = null) {
         const element = _(document).createElement(tagName, properties, events);
-        childrenCallback?.(_(element).appendElement);
+        //childrenFn?.(_(element).appendElement);
+
+        // Simply calls `appendElement`, but inherits `namespaceURI` if set on parent, but not on child
+        function appendChild() {
+            //const _props = is(properties?.namespaceURI) ? { namespaceURI: properties.namespaceURI, ...props } : props;
+            is.nil(arguments[1]?.namespaceURI) && (arguments[1].namespaceURI = properties?.namespaceURI);
+            return _(element).appendElement(...arguments);
+        }
+        childrenFn?.(appendChild);
+
         this.appendChild(element);
         return element;
     },
@@ -505,25 +514,18 @@ Extensions.Element = {
             Reflect.deleteProperty(properties, property);
         };
 
-        //const isSVG       = (this instanceof SVGElement);
-        const isHTML      = (this instanceof HTMLElement);
-        const isProperty  = (name) => Reflect.has(this, name);
-
         handle('attributes', is.obj,   (attrs) => _(attrs).forEach($0 => this.setAttribute($0)));
         handle('classList',  is.array, (list)  => list.forEach($0 => this.classList.add($0)));
-        if (isHTML) {
+        if (this instanceof HTMLElement) {
             handle('style',  is.obj,   _(this).applyStyle);
         }
 
-        
-        _(properties).forEach((property, value) => {
-            // (!hasProperty(property) || isSVG) ?
-            // this.setAttribute(property, value) :
-            //     (this[property] = value);
-            isProperty(property) ?
-                (this[property] = value) :
-                this.setAttribute(property, value);
-        });
+        // _(properties).forEach((property, value) => {
+        //     Reflect.has(this, property) ?
+        //         (this[property] = value) :
+        //         this.setAttribute(property, value);
+        // });
+         _(properties).forEach((k,v) => (this[k] = v));
     },
 
     
