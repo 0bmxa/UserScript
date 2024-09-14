@@ -192,6 +192,10 @@ Extensions.String = {
 
 
 Extensions.Object = {
+    forEach(body) {
+        Object.entries(this).forEach(([key, value], index) => body(key, value, index));
+    },
+    
     mapArray(transform) {
         const entries = Object.entries(this);
         return entries.map(([key, value], index) => transform(key, value, index));
@@ -212,15 +216,9 @@ Extensions.Object = {
             .join(entrySep);
     },
 
+    /*
     __diff(other, keyNames = ['A', 'B']) {
         const allKeys = Array.from(new Set([...Object.keys(this), ...Object.keys(other)]));
-
-        // const diffPairs = allKeys.reduce((res, key) => {
-        //     if (this[key] !== other[key]) {
-        //         res.push([key, { [keyNames[0]]: this[key], [keyNames[1]]: other[key] }]);
-        //     }
-        //     return res;
-        // }, []);
 
         const [keyA, keyB] = keyNames;
         const diffPairs = _(allKeys).filterMap(
@@ -229,7 +227,7 @@ Extensions.Object = {
         )
         return Object.fromEntries(diffPairs);
     },
-
+    */
 };
 
 
@@ -519,12 +517,36 @@ Extensions.HTMLElement = {
     /// Usage:
     /// -
     setProperties(properties = {}) {
-        if (properties.hasOwnProperty('style')) {
-            _(this).applyStyle(properties.style);
-            delete properties.style;
+        function handle(property, testFn, applyFn) {
+            const value = properties[property];
+            if (testFn(value) === false) { return }
+            applyFn(value);
+            Reflect.deleteProperty(properties, property);
         };
-        _(properties).mapArray((key, value) => this[key] = value);
-    },
+
+        //handle('style',      is.obj, (style) => _(this).applyStyle(style));
+        //handle('attributes', is.obj, (attrs) => _(attrs).forEach((k,v) => this.setAttribute(k,v)));
+        handle('style',      is.obj, _(this).applyStyle);
+        handle('attributes', is.obj, (attrs) => _(attrs).forEach(this.setAttribute));
+        handle('classList',  is.arr, (list)  => list.forEach(this.classList.add);
+
+        // TODO: Does this properly catch 'path' elements??
+        const isSVG = (this instanceof SVGElement);
+        
+        // for (const property in properties) {
+        //     const value = properties[property];
+        //     (Reflect.has(this, property) && !isSVG) ?
+        //         (this[property] = value) :
+	       //      this.setAttribute(property, value));
+        // }
+
+        const noProperty = (name) => Reflect.has(this, name) === false;
+        _(properties).forEach((property, value) => {
+            (noProperty(property) || isSVG) ?
+	            this.setAttribute(property, value)) :
+                (this[property] = value);
+        });
+},
 
     /// ...
     ///
@@ -551,35 +573,6 @@ Extensions.HTMLElement = {
         }
         return target;
     },
-
-
-
-    // Debug tools
-
-    /// ...
-    ///
-    /// Usage: ...
-    __allStyles() {
-        const styles = getComputedStyle(this);
-        return Object.fromEntries(Array.from(styles).map((name) => [name, styles[name]]));
-    },
-
-    /// Returns the diff of the elements' styles.
-    ///
-    /// Usage:
-    /// - log(_(myElement).__compareStyles(otherElement));
-    ///
-    /// - const stylesBefore = _(myElement).__allStyles();
-    ///   // [...]
-    ///   log(_(myElement).__compareStyles(stylesBefore));
-    __compareStyles(otherStyles__or__element, keyNames = ['before', 'after']) {
-        log('[__compareStyles] other type:', getType(otherStyles__or__element), 'is el:', is.type('HTMLElement', otherStyles__or__element));
-        const otherStyles = is.type('HTMLElement', otherStyles__or__element) ?
-            _(otherStyles__or__element).__allStyles() :
-            otherStyles__or__element;
-        const thisStyles = _(this).__allStyles();
-        return _(otherStyles).__diff(thisStyles, keyNames);
-    }
 };
 
 
