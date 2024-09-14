@@ -343,8 +343,8 @@ Extensions.Document = {
     /// - createElement('img', { src: '…' }, { load: (event) => … }));
     /// - createElement('div', { innerText: '…', style: { … } };
     createElement(tagName, properties = null, events = null) {
-	const namespace = properties?.namespaceURI ?? document.documentElement.namespaceURI;
-	const element = document.createElementNS(namespace, tagName);
+    const namespace = properties?.namespaceURI ?? document.documentElement.namespaceURI;
+    const element = document.createElementNS(namespace, tagName);
 
         if (properties !== null) {
             _(element).setProperties(properties);
@@ -382,18 +382,7 @@ Extensions.Document = {
 
 
 
-Extensions.HTMLElement = {
-    /// ...
-    ///
-    /// Usage: applyStyle({ fontSize: '12px, color: 'green !important' });
-    applyStyle(style = {}) {
-        for (const key in style) {
-            const property = _(key).matches('[A-Z]') ? _(key).kebabFromCamelCase() : key;
-    	    const [value, priority] = is.str(style[key]) ? style[key].split(' !') : [style[key]];
-    	    this.style.setProperty(property, value, priority);
-        }
-    },
-
+Extensions.Element = {
     /// ...
     ///
     /// Usage:
@@ -406,15 +395,6 @@ Extensions.HTMLElement = {
     // propertyAtSelector(selector, propertyName) {
     //     return this.querySelector(selector)?.[propertyName];
     // },
-
-    /// ...
-    ///
-    /// Usage:
-    /// -
-    // get parent() {
-    //     return this.parentElement;
-    // },
-
 
 
     /// Creates a new Element and inserts it as the last child.
@@ -525,54 +505,64 @@ Extensions.HTMLElement = {
             Reflect.deleteProperty(properties, property);
         };
 
-        //handle('style',      is.obj, (style) => _(this).applyStyle(style));
-        //handle('attributes', is.obj, (attrs) => _(attrs).forEach((k,v) => this.setAttribute(k,v)));
-        handle('style',      is.obj,   _(this).applyStyle);
+        //const isSVG       = (this instanceof SVGElement);
+        const isHTML      = (this instanceof HTMLElement);
+        const hasProperty = (name) => Reflect.has(this, name);
+
         handle('attributes', is.obj,   (attrs) => _(attrs).forEach(this.setAttribute));
         handle('classList',  is.array, (list)  => list.forEach(this.classList.add));
+        if (isHTML) {
+            handle('style',  is.obj,   _(this).applyStyle);
+        }
 
-        // TODO: Does this properly catch 'path' elements??
-        const isSVG = (this instanceof SVGElement);
         
-        // for (const property in properties) {
-        //     const value = properties[property];
-        //     (Reflect.has(this, property) && !isSVG) ?
-        //         (this[property] = value) :
-	       //      this.setAttribute(property, value));
-        // }
-
-        const isNoProperty = (name) => (Reflect.has(this, name) === false);
         _(properties).forEach((property, value) => {
-            (isNoProperty(property) || isSVG) ?
-	        this.setAttribute(property, value) :
-                (this[property] = value);
+            // (!hasProperty(property) || isSVG) ?
+            // this.setAttribute(property, value) :
+            //     (this[property] = value);
+            isProperty(property) ?
+                (this[property] = value) :
+                this.setAttribute(property, value);
         });
-},
+    },
 
+    
     /// ...
     ///
     /// Usage:
     /// -
-    // wrapInLink(url) {
-    //     const anchor = document.createElement("a");
-    //     anchor.href = url;
-    //     anchor.innerHTML = this.outerHTML;
-    //     this.replaceWith(anchor);
-    //     return anchor;
+    // get parent() {
+    //     return this.parentElement;
     // },
 
+    
     /// ...
     ///
     /// Usage:
-    /// -
-    parentElementAtLevel(levels) {
-        const iterations = Math.max(levels, 1); // at least 1
+    /// - parentAt(1); // equals .parentElement;
+    /// - parentAt(2); // equals .parentElement.parentElement;
+    parentAt(level = 1) {
+        const iterations = Math.max(level, 1); // at least 1
 
         let target = this;
         for (let i = 0; i < iterations; i++) {
             target = target.parentElement;
         }
         return target;
+    },
+};
+
+
+Extensions.HTMLElement = {
+    /// ...
+    ///
+    /// Usage: applyStyle({ fontSize: '12px, color: 'green !important' });
+    applyStyle(style = {}) {
+        for (const key in style) {
+            const property = _(key).matches('[A-Z]') ? _(key).kebabFromCamelCase() : key;
+            const [value, priority] = is.str(style[key]) ? style[key].split(' !') : [style[key]];
+            this.style.setProperty(property, value, priority);
+        }
     },
 };
 
