@@ -520,12 +520,11 @@ Extensions.Element = {
             handle('style',  is.obj,   _(this).applyStyle);
         }
 
-        // _(properties).forEach((property, value) => {
-        //     Reflect.has(this, property) ?
-        //         (this[property] = value) :
-        //         this.setAttribute(property, value);
-        // });
-         _(properties).forEach((k,v) => (this[k] = v));
+        _(properties).forEach((property, value) => {
+            Reflect.has(this, property) ?
+                (this[property] = value) :
+                this.setAttribute(property, value);
+        });
     },
 
     
