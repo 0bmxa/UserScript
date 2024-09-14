@@ -424,8 +424,10 @@ Extensions.Element = {
 
         // Simply calls `appendElement`, but inherits `namespaceURI` if set on parent, but not on child
         function appendChild() {
-            //const _props = is(properties?.namespaceURI) ? { namespaceURI: properties.namespaceURI, ...props } : props;
-            is.nil(arguments[1]?.namespaceURI) && (arguments[1].namespaceURI = properties?.namespaceURI);
+            const namespaceURI = properties?.namespaceURI;
+            if (is(namespaceURI)) {
+                arguments[1] = Object.assign({ namespaceURI }, arguments[1]);
+            }
             return _(element).appendElement(...arguments);
         }
         childrenFn?.(appendChild);
