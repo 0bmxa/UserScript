@@ -507,7 +507,7 @@ Extensions.Element = {
 
         //const isSVG       = (this instanceof SVGElement);
         const isHTML      = (this instanceof HTMLElement);
-        const hasProperty = (name) => Reflect.has(this, name);
+        const isProperty  = (name) => Reflect.has(this, name);
 
         handle('attributes', is.obj,   (attrs) => _(attrs).forEach(this.setAttribute));
         handle('classList',  is.array, (list)  => list.forEach(this.classList.add));
