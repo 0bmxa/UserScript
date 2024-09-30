@@ -371,12 +371,16 @@ Extensions.Document = {
             sheet.insertRule(ruleStr, index);
         });
 
+        let element = null, adoptedIndex = null;
         if (is(this.adoptedStyleSheets.push)) {
-            return this.adoptedStyleSheets.push(sheet);
+            const length = this.adoptedStyleSheets.push(sheet);
+            adoptedIndex = length - 1;
+        } else {
+            const cssString = Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n');
+            element = _(this.documentElement).appendElement('style', { innerHTML: cssString, type: 'text/css' });
         }
-
-        const cssString = Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n');
-        _(this.documentElement).appendElement('style', { innerHTML: cssString, type: 'text/css' });
+        
+        return { sheet, element, adoptedIndex };
     },
 };
 
