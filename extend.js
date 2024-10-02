@@ -426,30 +426,14 @@ Extensions.Element = {
     ///       appendChild('span', { … });
     ///   });
     appendElement(tagName, properties = null, events = null, childrenFn = null) {
-        const element = _(document).createElement(tagName, properties, events);
-        //childrenFn?.(_(element).appendElement);
-
-        // Simply calls `appendElement`, but inherits `namespaceURI` if set on parent, but not on child
-        function appendChild() {
-            const namespaceURI = properties?.namespaceURI;
-            if (is(namespaceURI)) {
-                arguments[1] = Object.assign({ namespaceURI }, arguments[1]);
-            }
-            return _(element).appendElement(...arguments);
-        }
-        childrenFn?.(appendChild);
-
-        this.appendChild(element);
-        return element;
+        return _(this).insertElement({ after: this.lastChild }, tagName, properties, events, childrenFn);
     },
 
     /// Creates a new Element and inserts it as the first child.
     ///
     /// Usage see `appendElement`.
-    prependElement(tagName, properties = null, events = null) {
-        const element = _(document).createElement(tagName, properties, events);
-        this.insertBefore(element, this.firstChild);
-        return element;
+    prependElement(tagName, properties = null, events = null, childrenFn = null) {
+        return _(this).insertElement({ before: this.firstChild }, tagName, properties, events, childrenFn);
     },
 
     /// Creates a new Element and inserts it before/after the specified reference element.
@@ -461,38 +445,46 @@ Extensions.Element = {
     /// Usage:
     /// - insertElement({ before: otherElement }, 'img', { src: '…' }, { load: (event) => … });
     /// - insertElement({ after:  self         }, 'div', { innerText: '…', style: { … } });
-    /// //- insertElement({ index:  3            }, 'div', … );
-    insertElement(refElement = {}, tagName, properties = null, events = null) {
-        if (is.nil(refElement.before ?? refElement.after)) {
-        // if (is.nil(refElement.before ?? refElement.after ?? refElement.at)) {
+    /// //- insertElement({ atIndex:  3            }, 'div', … );
+    insertElement(refElement = {}, tagName, properties = null, events = null, childrenFn = null) {
+        const positionAndRef = Object.entries(refElement)[0];
+        if (is.nil(positionAndRef)) {
             LogGroup.error('Invalid Reference element.');
             return null;
         }
 
-        // (Bool) Insert before? (or after)
-        const isBefore = is(refElement.before);
-        // const isIndex  = is(refElement.at);
-
-        // The actual reference element
-        const _refElement = isBefore ? refElement.before : refElement.after;
-        // const _refElement = isIndex ? this.childNodes.item(refElement.at) :
-        //     isBefore ? refElement.before : refElement.after;
+        const [ position, ref ] = positionAndRef;
+        const _refElement = (position === 'atIndex') ? this.childNodes.item(ref) : ref;
 
         // In case the reference element is (the symbol) `self`,
         // re-run this method on the parent element, with `this` as reference element.
         if (_refElement === self) {
-            const thisRef = isBefore ? ({ before: this }) : ({ after: this });
-            return _(this.parentElement).insertElement(thisRef, tagName, properties, events);
+            const thisRef = (position === 'before') ? ({ before: this }) : ({ after: this });
+            return _(this.parentElement).insertElement(thisRef, tagName, properties, events, childrenFn);
         }
 
         // Create the new element
         const newElement = _(document).createElement(tagName, properties, events);
 
+        // Calls `appendElement`, but inherits `namespaceURI` if set on parent, but not on child
+        if (is.fn(childrenFn)) {
+            const namespaceURI = properties?.namespaceURI;
+            function appendChild(__args) {
+                if (is(namespaceURI)) {
+                    arguments[1] = Object.assign({ namespaceURI }, arguments[1]);
+                }
+                return _(newElement).appendElement(...arguments);
+            }
+            childrenFn(appendChild);
+        }
+
         // The element after the reference Element, needed by `insertBefore`.
-        const nextElement = isBefore ? _refElement : _refElement.nextElementSibling;
+        // Note: _refElement (and nextElement) may be `null`.
+        const nextElement = (position === 'before' || is.nil(_refElement)) ? _refElement : _refElement.nextElementSibling;
         is(nextElement) ?
             this.insertBefore(newElement, nextElement) :
             this.appendChild(newElement);
+
         return newElement;
     },
 
