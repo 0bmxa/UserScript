@@ -238,13 +238,7 @@ Extensions.Array = {
     },
 
     count(filterFn) {
-        if (is.nil(filterFn)) { return this.length; }
-
-        // let res = 0;
-        // this.forEach((node, i, list) => {
-        //     if (filterFn(node, i, list)) { res++; }
-        // });
-        // return res;
+        if (!is.fn(filterFn)) { return this.length; }
         return this.filter(filterFn).length;
     },
 
@@ -260,6 +254,15 @@ Extensions.Array = {
             }
             return res;
         }, []);
+    },
+
+    sortedBy(transform) {
+        return this.toSorted((a, b) => {
+            const _a = transform(a);
+            const _b = transform(b);
+            return (_a > _b) ?  1 :
+                   (_a < _b) ? -1 : 0;
+        });
     },
 };
 
