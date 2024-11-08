@@ -33,28 +33,44 @@ Extensions.Number = {
 };
 
 Extensions.String = {
+    /**
+     * @typedef {String|RegExp} Pattern
+     *
+
+    /**
+     * Creates a new String with each word capitalized.
+     */
     capitalized() {
-        return this.replaceAll(/^./g, char => char.toUpperCase());
+        return this.replaceAll(/\b./g, char => char.toUpperCase());
     },
 
+    /**
+     * …
+     */
     kebabFromCamelCase() {
         return this.replaceAll(/([A-Z])/g, (char) => '-' + char.toLowerCase());
     },
 
-    /// Whether the string is contained in the provided array.
-    ///
-    /// Usage:
-    /// - _(myValue).in(myArray)
+     /**
+     * Whether the string is contained in the provided array or array-like list.
+     *
+     * @param {ArrayLike} arrayLike - The array or array-like to search.
+     *
+     * @example _(myValue).in(myArray)
+     */
     in(arrayLike) {
         return Array.prototype.includes.call(arrayLike, this);
     },
 
-
-    // equals(search, ignoreCase = false) {
-    //     const cased = (value) => (ignoreCase === true ? value.toLowerCase() :  value);
-    //     return cased(this) === cased(search);
-    // },
-
+     /**
+     * Whether the string contains the provided pattern.
+     *
+     * @param {Pattern} search     - …
+     * @param {Boolean} ignoreCase - …
+     *
+     * @example _('FooBar123').contains('foo', true);
+     * @example _('FooBar123').contains(/\d+/)
+     */
     contains(search, ignoreCase = false) {
         if (getType(search) === 'RegExp') {
             return _(this).matches(search, ignoreCase);
@@ -63,10 +79,26 @@ Extensions.String = {
         return toCase(this).includes(toCase(search));
     },
 
+    /**
+     * …
+     *
+     * @param {Array}   searchArray - …
+     * @param {Boolean} ignoreCase  - …
+     *
+     * @example …
+     */
     containsOneOf(searchArray, ignoreCase = false) {
         return searchArray.some(search => _(this).contains(search, ignoreCase));
     },
 
+    /**
+     * …
+     *
+     * @param {RegExp}  regex             - …
+     * @param {Boolean} forceIgnoreCase   - …
+     *
+     * @example …
+     */
     matches(regex, forceIgnoreCase = false) {
         if (forceIgnoreCase && !regex.flags.includes('i')) {
             regex = new RegExp(regex.source, regex.flags + 'i');
@@ -74,17 +106,17 @@ Extensions.String = {
         return this.match(regex) !== null;
     },
 
-    /// …
-    ///
-    /// Parameters:
-    /// - regex: TODO
-    /// - transform: Fn( )?
-    /// - fallback: Any? = null  // The value to return when parsing fails.
-    ///
-    /// Usage:
-    /// - parse(myRegex, Number);
-    /// - parse(myRegex, Number, {});
-    /// - parse(myRegex, null, self);
+    /**
+     * …
+     *
+     * @param {RegExp}   regex     - …
+     * @param {Function} transform - …
+     * @param {?}        [fallback=null] - The value to return when parsing fails.
+     *
+     * @example parse(myRegex, Number);
+     * @example parse(myRegex, Number, {});
+     * @example parse(myRegex, null,   self);
+     */
     parse(regex, transform = null, fallback = null) {
         const res = this.match(regex);
 
@@ -106,14 +138,15 @@ Extensions.String = {
         return res.groups || res;
     },
 
-    /// Parses a duration string; returns seconds.
-    ///
-    /// Supports:
-    /// - Time: 00:19 | 55:01 | 1:00:55
-    /// - Seconds: 3600
-    /// - Number & unit: 3600s | 60m | 1h
-    ///
-    /// Combinations (1:30h) are not supported.
+    /**
+     * Parses a duration string; returns seconds.
+     * 
+     * Supports:
+     * - Time: 00:19 | 55:01 | 1:00:55
+     * - Seconds: 3600
+     * - Number & unit: 3600s | 60m | 1h
+     * Combinations (1:30h) are not supported.
+     */
     parseDuration() {
         if (!_(this).matches(/\d/)) {
             return null;
@@ -136,6 +169,9 @@ Extensions.String = {
         return value * factor;
     },
 
+    /**
+     * …
+     */
     parseRelativeDate() {
         const sanitized = _(this).replaceMultiple([
             [/^in /, ''],
@@ -153,6 +189,9 @@ Extensions.String = {
         return _(sanitized).parseDuration();
     },
 
+    /**
+     * …
+     */
     parseFileSize() {
         // Number & unit
         const regex = /(?<value>-?\d+(\.\d+)?)\s*(?<unit>[KMGT]?B)/i;
@@ -164,29 +203,40 @@ Extensions.String = {
         return value * factor;
     },
 
-    /// Replaces multiple patterns.
-    ///
-    /// Usage:
-    ///   text.replaceMultiple([
-    ///       [/(.+) ago/, '-$1'],
-    ///       [' days',    'd'],
-    ///       [' months',  'mo'],
-    ///   ]);
+    /**
+     * Creates a new string with multiple patterns replaced or removed.
+     *
+     * @typedef {Array} Pair
+     * @property {Pattern}  0     - A pattern to search for.
+     * @property {String?} [1=''] - A replacement value or callback (default: `''`).
+     *
+     * @param {Array<Pair>} pairs - …
+     *
+     * @example replaceMultiple([
+     *     [/(\d+) ago/, '-$1'],
+     *     [' days',    'd'],
+     *     [' months'],
+     * ]);
+     */
     replaceMultiple(pairs) {
         const _replaceOne = (string, [pattern, replacement]) =>
             (pattern instanceof RegExp && pattern.global) ?
                 string.replaceAll(pattern, replacement ?? '') :
-                string.replace(pattern, replacement ?? '');
+                string.replace(   pattern, replacement ?? '');
 
         return pairs.reduce(_replaceOne, this);
     },
 
-    /// Remove leading/trailing whitespace
-    ///
-    /// Usage:
-    /// - trimWhitespace();
-    trimWhitespace() {
-        return this.replaceAll(/(^\s*|\s*$)/g, '');
+    /**
+     * Creates a new string with all occurences of `pattern` removed.
+     *
+     * @param {Pattern} pattern - …
+     *
+     * @example remove('foo');
+     * @example remove(/\d+/);
+     */
+    remove(pattern) {
+        return this.replaceAll(pattern, '');
     },
 };
 
