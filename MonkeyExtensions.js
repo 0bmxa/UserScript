@@ -1,8 +1,10 @@
 /**
- * @typedef {Object} Config
- * @property {string} title - The title of the menu entry.
- * @property {function(Event): (Object|undefined)} action - The function to execute when the menu entry is clicked. Can optionally return an updated config object.
- * @property {string} [tooltip] - The tooltip for the menu entry (optional).
+ * @typedef {(event: Event) => (Object|undefined)} Action
+ *
+ * @typedef {Object} MenuEntry
+ * @property {string}  title            - The title of the menu entry.
+ * @property {Action}  action           - The function to execute when the menu entry is clicked. Can optionally return an updated config object.
+ * @property {string}  [tooltip]        - The tooltip for the menu entry (optional).
  * @property {boolean} [closeMenu=true] - Whether the menu should automatically close after an action is triggered (optional, default: true).
  */
 
@@ -18,43 +20,43 @@
 class Menu {
     /**
      * Creates menu entries based on the provided configurations.
-     * @param {Config[]} configs - Array of menu configuration objects.
+     * @param {MenuEntry[]} entries - Array of menu configuration objects.
      */
-    static create(configs) {
-        configs.forEach(Menu.#createEntry);
+    static create(entries) {
+        entries.forEach(Menu.#createEntry);
     }
 
     /**
      * Creates an individual menu entry and registers its click handler.
      * @private
-     * @param {Config} _config - The menu configuration object.
-     * @param {number} index - The index of the menu entry.
+     * @param {MenuEntry} entry - A menu entry configuration object.
+     * @param {number}    index - The entry's index.
      */
-    static #createEntry(_config, index) {
-        const config = Object.assign({}, _config); // copy
+    static #createEntry(entry, index) {
+        const config = Object.assign({}, entry); // copy
         config.closeMenu ??= true;
 
-        const clickHandler = (event) => {
+        const handler = (event) => {
             const updatedConfig = config.action(event);
             if (typeof updatedConfig === 'object') {
                 Object.assign(config, updatedConfig);
-                Menu.#registerEntry(index, config, clickHandler);
+                Menu.#registerEntry(index, config, handler);
             }
         }
 
-        Menu.#registerEntry(index, config, clickHandler);
+        Menu.#registerEntry(index, config, handler);
     }
 
     /**
      * Registers a menu entry with a unique index and click handler.
      * @private
-     * @param {number} index - The index of the menu entry.
-     * @param {Config} config - The menu configuration object.
-     * @param {Function} clickHandler - The function to handle menu entry clicks.
+     * @param {number}    index   - The index of the menu entry.
+     * @param {MenuEntry} entry   - The menu entry configuration.
+     * @param {Function}  handler - The function to handle menu entry clicks.
      */
-    static #registerEntry(index, config, clickHandler) {
-        const options = { id: index, title: config.tooltip, autoClose: config.closeMenu };
-        GM_registerMenuCommand(config.title, clickHandler, options);
+    static #registerEntry(index, entry, handler) {
+        const options = { id: index, title: entry.tooltip, autoClose: entry.closeMenu };
+        GM_registerMenuCommand(entry.title, handler, options);
     }
 }
 
