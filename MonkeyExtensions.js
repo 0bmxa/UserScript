@@ -18,12 +18,25 @@
  * ]);
  */
 class Menu {
+    static indices = [];
+    
     /**
      * Creates menu entries based on the provided configurations.
-     * @param {MenuEntry[]} entries - Array of menu configuration objects.
+     * @param {MenuEntry[]} entries - An array of menu entries.
      */
     static create(entries) {
-        entries.forEach(Menu.#createEntry);
+        const startIndex = this.indices.toSorted().at(-1) ?? 0;
+        return entries.map((entry, offset) => Menu.#createEntry(entry, startIndex + offset));
+    }
+
+    /**
+     * Removes the menu entries at the specified indices.
+     * @param {number[]} [indices] - The indicies of the entries to remove (optional, default: all).
+     */
+    static remove(indices = this.indices) {
+        indices.forEach(index => {
+            this.indices.contains(index) && this.#unregisterEntry(index);
+        });
     }
 
     /**
@@ -37,15 +50,19 @@ class Menu {
         config.closeMenu ??= true;
 
         const handler = (event) => {
+            // Run the action.
             const updatedConfig = config.action(event);
+
+            // Update config, if the action returned an updated config.
             if (typeof updatedConfig === 'object') {
                 Object.assign(config, updatedConfig);
                 Menu.#registerEntry(index, config, handler);
             }
         }
 
-        Menu.#registerEntry(index, config, handler);
+        return Menu.#registerEntry(index, config, handler);
     }
+
 
     /**
      * Registers a menu entry with a unique index and click handler.
@@ -57,20 +74,25 @@ class Menu {
     static #registerEntry(index, entry, handler) {
         const options = { id: index, title: entry.tooltip, autoClose: entry.closeMenu };
         GM_registerMenuCommand(entry.title, handler, options);
+        this.indices.push(index);
+        return index;
+    }
+
+    /**
+     * Removes the menu entry at the specified index.
+     * @private
+     * @param {number} index - The index of the menu entry to remove.
+     */
+    static #unregisterEntry(index) {
+        GM_unregisterMenuCommand(index);
+
+        const i = this.indices.indexOf(index);
+        this.indices.splice(i, 1);
     }
 }
 
 
-const MonkeyExtensions = {
-    Menu,
+// Export
+window.MonkeyExtensions = {
+    Menu
 };
-
-
-// Export (copied from SunCalc)
-// if (module) && is.object(exports)) {          // ??
-//     module.exports = MonkeyExtensions;
-// } else if (is.function(define) && define.amd) {  // ??
-//     define(MonkeyExtensions);
-// } else {
-    window.MonkeyExtensions = MonkeyExtensions;
-// }
