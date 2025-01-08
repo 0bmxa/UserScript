@@ -499,7 +499,7 @@ Extensions.Element = {
     insertElement(refElement = {}, tagName, properties = null, events = null, childrenFn = null) {
         const positionAndRef = Object.entries(refElement)[0];
         if (is.nil(positionAndRef)) {
-            LogGroup.error('Invalid Reference element.');
+            console.error('[insertElement] Invalid Reference element.');
             return null;
         }
 
@@ -537,21 +537,6 @@ Extensions.Element = {
 
         return newElement;
     },
-
-    /// ...
-    ///
-    /// Usage:
-    /// - insertElementAfter(otherElement, 'img', […] );
-//     insertElementAfter(refElement, tagName, properties = null, events = null) {
-//         LogGroup.warn('Deprecated. Use `insertElement({ after: … }, …)` instead.');
-//         const element = _(document).createElement(tagName, properties, events);
-
-//         const nextElement = refElement.nextElementSibling;
-//         is(nextElement) ?
-//             this.insertBefore(element, nextElement) :
-//             this.appendChild(element);
-//         return element;
-//     },
 
     /// ...
     ///
@@ -797,18 +782,13 @@ const _ = (target, typeName = null) => {
     // Enforced extension type
     if (!is.nil(typeName)) {
         return extend(target, Extensions[typeName]);
-        // const { extended, original } = extend(target, Extensions[typeName]);
-        // return extended;
     }
 
     // Special case: NullObject uses Object extension
     const type = getType(target);
     if (type === 'NullObject') {
         return extend(target, Extensions.Object);
-        // const { extended, original } = extend(target, Extensions.Object);
-        // return extended;
     }
-
 
     // Walk up the prototype chain (starting at `Object`) and wrap the previous
     // result with the current prototype's extension.
@@ -816,16 +796,11 @@ const _ = (target, typeName = null) => {
     // the target type.
     let _target = target;
 
-    // LogGroup.debug('[_] target:', target);
     for (const proto of Reflect_prototypes(target).reverse()) {
         const type = getType(proto);
         const extension = Extensions[type];
-        // LogGroup.debug(' • proto:', type, 'has extension:', is(extension));
         if (is(extension)) {
-            // _target = extend(_target, extension);
             _target = extend(_target, extension, target);
-            // const { extended, original } = extend(_target, extension, target);
-            // _target = extended;
         }
     }
 
@@ -858,7 +833,7 @@ const self = Symbol('self');
 
 
 /*
-const catching = (body, errorHandler = LogGroup.error) => {
+const catching = (body, errorHandler = console.error) => {
     try { return body(); }
     catch (e) { errorHandler(e); return null; }
 }
@@ -872,13 +847,6 @@ const catching = (body, errorHandler = LogGroup.error) => {
 ///       const foo = 123;
 ///   });
 const withScope = (body) => body();
-
-
-// For usage see SnippetsLab
-const Enum = (obj) => new Proxy({}, {
-    get: (_, property) => obj[property] || obj.cases[property],
-    set: (_, property) => console.error(`${property} is read only.`),
-});
 */
 
 const ExtendJS = {
@@ -888,18 +856,5 @@ const ExtendJS = {
     Extensions,
 };
 
-/*
-// Export (copied from SunCalc)
-if (is(module) && is.object(exports)) {          // ??
-    //console.debug('export: module');
-    module.exports = ExtendJS;
-} else if (is.function(define) && define.amd) {  // ??
-    //console.debug('export: define');
-    define(ExtendJS);
-} else {
-    //console.debug('export: window');
-    window.__ExtendJS = ExtendJS;
-}
-*/
+// Export (is this the correct way?)
 window.__ExtendJS = ExtendJS;
-
