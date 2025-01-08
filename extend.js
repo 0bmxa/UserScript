@@ -785,35 +785,6 @@ class PrimitiveWrapper {
 
 
 
-// const extend = (target, extension = {}) => {
-//     const getFromExtension = (prop) => (
-//         extension.hasOwnProperty(prop) ?
-//             Reflect.get(extension, prop, target) :
-//             null
-//     );
-
-//     const getFromTarget = (wrapper, prop) => {
-//         const property = wrapper.target[prop];
-//         return is.function(property) ? property.bind(wrapper.target) : property;
-//     };
-
-//     const setOnTarget = (wrapper, prop, newValue) => (wrapper.target[prop] = newValue);
-
-//     // Wrap target in object, so Primitives can be Proxied (+ maybe reference semantics?)
-//     const wrapper = { target };
-//     return new Proxy(wrapper, {
-//         get(wrapper, prop) {
-//             return getFromExtension(prop) ?? getFromTarget(wrapper, prop);
-//         },
-
-//         set(wrapper, prop, newValue) {
-//             setOnTarget(wrapper, prop, newValue);
-//         },
-//     });
-// };
-
-
-
 /// Extends a single instance.
 ///
 /// Parameters:
