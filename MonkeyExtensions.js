@@ -35,7 +35,7 @@ class Menu {
      */
     static remove(indices = this.indices) {
         indices.forEach(index => {
-            this.indices.contains(index) && this.#unregisterEntry(index);
+            this.indices.includes(index) && this.#unregisterEntry(index);
         });
     }
 
