@@ -306,12 +306,13 @@ Extensions.Array = {
         }, []);
     },
 
-    sortedBy(transform) {
+    sortedBy(transform, inverse = false) {
+        const s = inverse ? 1 : -1;
         return this.toSorted((a, b) => {
             const _a = transform(a);
             const _b = transform(b);
-            return (_a > _b) ?  1 :
-                   (_a < _b) ? -1 : 0;
+            return (_a > _b) ?  s :
+                   (_a < _b) ? -s : 0;
         });
     },
 };
