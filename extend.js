@@ -827,6 +827,7 @@ is.fn  = is.function;
 is.obj = is.object;
 
 
+// TODO: Remove/replace with 'self'. No need for global symbol shadowing `window.self`.
 /// A symbol used for self-reference.
 /// Example: insertElement({ before: self }, […] )
 const self = Symbol('self');
@@ -850,12 +851,27 @@ const catching = (body, errorHandler = console.error) => {
 const withScope = (body) => body();
 */
 
+
+// Export
 const ExtendJS = {
     _,
     is,
+    // TODO: Replace with `self: 'self'` (for compatibility)
     self,
+    getType,
     Extensions,
 };
 
-// Export (is this the correct way?)
-window.__ExtendJS = ExtendJS;
+
+if (is.obj(exports) && is(import?.meta)) {
+    export default ExtendJS;
+    /* export const { _,
+        is,
+        // TODO: Replace with `self: 'self'` (for compatibility)
+        self,
+        getType,
+        Extensions,
+    } = ExtendJS; */
+} else {
+    window.__ExtendJS = ExtendJS;
+};
