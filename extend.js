@@ -863,7 +863,7 @@ const ExtendJS = {
 };
 
 
-if (is.obj(exports) && is(import?.meta)) {
+if (is.obj(exports) && is(import.meta)) {
     export default ExtendJS;
     /* export const { _,
         is,
