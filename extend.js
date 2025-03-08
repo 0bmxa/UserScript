@@ -862,12 +862,8 @@ const ExtendJS = {
     Extensions,
 };
 
-const supportsModules = (() => {
-    try { return is.obj(exports) && is(import.meta) }
-    catch(e) { return false; }
-})();
-
-if (supportsModules) {
+//const isESM = (globalThis.document?.currentScript?.type === 'module');
+if (is.obj(exports)) {
     export default ExtendJS;
     /* export const { _,
         is,
