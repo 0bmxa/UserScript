@@ -862,8 +862,12 @@ const ExtendJS = {
     Extensions,
 };
 
+const supportsModules = (() => {
+    try { return is.obj(exports) && is(import.meta) }
+    catch(e) { return false; }
+})();
 
-if (is.obj(exports) && is(import.meta)) {
+if (supportsModules) {
     export default ExtendJS;
     /* export const { _,
         is,
