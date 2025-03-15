@@ -863,15 +863,15 @@ const ExtendJS = {
 };
 
 //const isESM = (globalThis.document?.currentScript?.type === 'module');
-if (is.obj(exports)) {
-    export default ExtendJS;
-    /* export const { _,
-        is,
-        // TODO: Replace with `self: 'self'` (for compatibility)
-        self,
-        getType,
-        Extensions,
-    } = ExtendJS; */
-} else {
+// if (is.obj(exports)) {
+//     export default ExtendJS;
+//     /* export const { _,
+//         is,
+//         // TODO: Replace with `self: 'self'` (for compatibility)
+//         self,
+//         getType,
+//         Extensions,
+//     } = ExtendJS; */
+// } else {
     window.__ExtendJS = ExtendJS;
-};
+// };
