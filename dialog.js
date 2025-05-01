@@ -7,7 +7,7 @@ class Dialog {
     };
 
     style = `
-    @keyframes showOverlay {
+    @keyframes showBackdrop {
         from { opacity: 0 }
         to   { opacity: 1 }
     }
@@ -20,7 +20,7 @@ class Dialog {
         font: -apple-system;
     }
     
-    .overlay {
+    .backdrop {
         position: fixed;
         top:     0;
         left:    0;
@@ -31,7 +31,7 @@ class Dialog {
         background:      rgba(0, 0, 0, 0.4);
         justify-content: center;
         align-items:     center;
-        animation:       showOverlay 300ms ease-out;
+        animation:       showBackdrop 300ms ease-out;
     }
     
     .dialog {
@@ -173,8 +173,8 @@ class Dialog {
         const style = document.createElement('style');
         style.textContent = this.style;
         
-        const modal = document.createElement('div');
-        modal.className = 'overlay';
+        const backdrop = document.createElement('div');
+        backdrop.className = 'backdrop';
 
         const dialog = document.createElement('div');
         dialog.className = 'dialog';
@@ -218,8 +218,8 @@ class Dialog {
             dialog.appendChild(inputsContainer);
         }
 
-        const buttons = (config.buttons || ['OK']).map((btn) =>
-            typeof btn === 'string' ? { label: btn } : btn
+        const buttons = (config.buttons ?? [ 'OK' ]).map(conf =>
+            (typeof conf === 'string') ? { label: conf } : conf
         );
 
         const buttonContainer = document.createElement('div');
@@ -227,15 +227,15 @@ class Dialog {
             buttons.length > 2 ? 'stacked' : ''
         }`;
 
-        buttons.forEach((btn) => {
-            const button = document.createElement('button');
-            button.textContent = btn.label;
-            button.className   = `${btn.primary ? 'primary' : ''}`;
+        buttons.forEach(conf => {
+            const buttonEl = document.createElement('button');
+            buttonEl.textContent = conf.label;
+            buttonEl.className   = `${conf.primary ? 'primary' : ''}`;
 
-            button.onclick = () => {
+            buttonEl.onclick = () => {
                 document.body.removeChild(root);
                 const res = {
-                    button: btn.label,
+                    button: conf.label,
                     values: Object.fromEntries(
                         Object.entries(values).map(([key, input]) => [
                             key,
@@ -246,13 +246,13 @@ class Dialog {
                 buttonAction(res);
             };
 
-            buttonContainer.appendChild(button);
+            buttonContainer.appendChild(buttonEl);
         });
 
         dialog.appendChild(buttonContainer);
-        modal.appendChild(dialog);
+        backdrop.appendChild(dialog);
         shadow.appendChild(style);
-        shadow.appendChild(modal);
+        shadow.appendChild(backdrop);
         document.body.appendChild(root);
     }
 }
