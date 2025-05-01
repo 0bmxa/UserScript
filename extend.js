@@ -397,8 +397,8 @@ Extensions.Document = {
     /// - createElement('img', { src: '…' }, { load: (event) => … }));
     /// - createElement('div', { innerText: '…', style: { … } };
     createElement(tagName, properties = null, events = null) {
-    const namespace = properties?.namespaceURI ?? document.documentElement.namespaceURI;
-    const element = document.createElementNS(namespace, tagName);
+        const namespace = properties?.namespaceURI ?? this.firstChild.namespaceURI;
+        const element   = this.createElementNS(namespace, tagName);
 
         if (properties !== null) {
             _(element).setProperties(properties);
@@ -431,7 +431,7 @@ Extensions.Document = {
             adoptedIndex = length - 1;
         } else {
             const cssString = Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n');
-            element = _(this.documentElement).appendElement('style', { innerHTML: cssString, type: 'text/css' });
+            element = _(this.firstChild).appendElement('style', { innerHTML: cssString, type: 'text/css' });
         }
         
         return { sheet, element, adoptedIndex };
@@ -439,24 +439,11 @@ Extensions.Document = {
 };
 
 
-Extensions.DocumentFragment = Extensions.Document;
+Extensions.ShadowRoot = Extensions.Document;
 
 
 
-Extensions.Element = {
-    /// ...
-    ///
-    /// Usage:
-    /// -
-    textAtSelector(selector) {
-        return this.querySelector(selector)?.innerText;
-    },
-
-
-    // propertyAtSelector(selector, propertyName) {
-    //     return this.querySelector(selector)?.[propertyName];
-    // },
-
+Extensions.Node = {
 
     /// Creates a new Element and inserts it as the last child.
     ///
@@ -518,7 +505,7 @@ Extensions.Element = {
         }
 
         // Create the new element
-        const newElement = _(document).createElement(tagName, properties, events);
+        const newElement = _(this.getRootNode()).createElement(tagName, properties, events);
 
         // Calls `appendElement`, but inherits `namespaceURI` if set on parent, but not on child
         if (is.fn(childrenFn)) {
@@ -561,7 +548,7 @@ Extensions.Element = {
         }
 
         _(properties).forEach((property, value) => {
-            Reflect.has(this, property) ?
+            (Reflect.has(this, property) || !(this instanceof Element)) ?
                 (this[property] = value) :
                 this.setAttribute(property, value);
         });
@@ -592,6 +579,19 @@ Extensions.Element = {
         return target;
     },
 };
+
+
+
+Extensions.Element = {
+    /// ...
+    ///
+    /// Usage:
+    /// -
+    textAtSelector(selector) {
+        return this.querySelector(selector)?.innerText;
+    },
+};
+
 
 
 Extensions.HTMLElement = {
