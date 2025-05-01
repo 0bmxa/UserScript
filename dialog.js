@@ -256,3 +256,6 @@ class Dialog {
         document.body.appendChild(root);
     }
 }
+
+
+export default Dialog;
