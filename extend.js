@@ -398,7 +398,7 @@ Extensions.Document = {
     /// - createElement('div', { innerText: '…', style: { … } };
     createElement(tagName, properties = null, events = null) {
         const namespace = properties?.namespaceURI ?? document.documentElement.namespaceURI;
-        const element   = this.createElementNS(namespace, tagName);
+        const element   = document.createElementNS(namespace, tagName);
 
         if (properties !== null) {
             _(element).setProperties(properties);
@@ -505,7 +505,7 @@ Extensions.Node = {
         }
 
         // Create the new element
-        const newElement = _(this.getRootNode()).createElement(tagName, properties, events);
+        const newElement = _(document).createElement(tagName, properties, events);
 
         // Calls `appendElement`, but inherits `namespaceURI` if set on parent, but not on child
         if (is.fn(childrenFn)) {
