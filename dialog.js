@@ -3,7 +3,8 @@
 
 class Dialog {
     options = {
-        duration: 300,
+        //duration: 300,
+        backdropColor: 'rgba(0, 0, 0, 0.4)',
     };
 
     style = `
@@ -28,14 +29,15 @@ class Dialog {
         right:   0;
         display:         flex;
         z-index:         1000;
-        background:      rgba(0, 0, 0, 0.4);
+        background:      ${this.options.backdropColor ?? 'none'};
         justify-content: center;
         align-items:     center;
         animation:       showBackdrop 300ms ease-out;
     }
     
     .dialog {
-        width:          270px;
+        width:          90vw;
+        max-width:      500px;
         display:        flex;
         flex-direction: column;
         background:     #f2f2f7;
@@ -223,9 +225,7 @@ class Dialog {
         );
 
         const buttonContainer = document.createElement('div');
-        buttonContainer.className = `buttons ${
-            buttons.length > 2 ? 'stacked' : ''
-        }`;
+        buttonContainer.className = `buttons ${buttons.length > 2 ? 'stacked' : ''}`;
 
         buttons.forEach(conf => {
             const buttonEl = document.createElement('button');
