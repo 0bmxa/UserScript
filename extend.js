@@ -439,6 +439,9 @@ Extensions.Document = {
 };
 
 
+Extensions.DocumentFragment = Extensions.Document;
+
+
 
 Extensions.Element = {
     /// ...
