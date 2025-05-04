@@ -5,7 +5,8 @@ class Dialog {
     options = {
         //duration: 300,
         backdropColor: 'rgba(0, 0, 0, 0.4)',
-        align:          'center',
+        align:         'left',
+        scale:         (1.0 / visualViewport.scale),
     };
 
     get style() {
@@ -41,12 +42,13 @@ class Dialog {
             width:          90vw;
             max-width:      500px;
             max-height:     90vh;
+            transform:      scale(${this.options.scale?.toFixed(4) ?? 1.0});
             display:        flex;
             flex-direction: column;
             background:     #f2f2f7;
             border-radius:  10px;
             overflow:       hidden;
-            box-shadow:     0px 3px 8px #000;
+            box-shadow:     0px 5px 10px rgba(0, 0, 0, 0.4);
             animation:      showDialog 300ms ease-out;
         }
         
