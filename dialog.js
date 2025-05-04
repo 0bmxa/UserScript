@@ -6,7 +6,6 @@ class Dialog {
         //duration: 300,
         backdropColor: 'rgba(0, 0, 0, 0.4)',
         align:         'left',
-        scale:         (1.0 / visualViewport.scale),
     };
 
     get style() {
@@ -42,7 +41,7 @@ class Dialog {
             width:          90vw;
             max-width:      500px;
             max-height:     90vh;
-            transform:      scale(${this.options.scale?.toFixed(4) ?? 1.0});
+         /* transform:      scale(${(1.0 / visualViewport.scale).toFixed(4)}); */
             display:        flex;
             flex-direction: column;
             background:     #f2f2f7;
@@ -57,32 +56,32 @@ class Dialog {
             padding:    16px 16px 0 16px;
             font:       -apple-system-headline;
             font-size:  1.1rem;
-            text-align: ${this.options.align ?? 'none'};
+            text-align: center;
         }
         
         .message {
-            margin:        0;
-            margin-bottom: 16px;
+            margin:        0 0 16px 0;
             padding:       0 16px;
             white-space:   pre-wrap;
             overflow-y:    scroll;
             font:          -apple-system-body;
+            line-height:   1.36em;
             text-align:    ${this.options.align ?? 'none'};
         }
         
-        .textfields {
+        .textFields {
             padding: 8px 16px;
         }
         
         input {
-            width: 100%;
-            padding: 8px 12px;
+            box-sizing:    border-box;
+            width:         100%;
+            padding:       8px 12px;
             margin-bottom: 8px;
-            border: none;
+            background:    white;
+            border:        0.5px solid #ccc;
             border-radius: 8px;
-            background: #e5e5ea;
-            font: -apple-system-body;
-            box-sizing: border-box;
+            font:          -apple-system-body;
         }
         
         .buttons {
@@ -187,6 +186,7 @@ class Dialog {
         //this.#loadDependencies(document.head);
         
         //_(document.body).appendElement();
+        console.debug(typeof _, _);
 
         const style = document.createElement('style');
         style.textContent = this.style;
@@ -199,41 +199,36 @@ class Dialog {
 
         if (config.title) {
             const title = document.createElement('div');
-            title.className = 'title';
+            title.className   = 'title';
             title.textContent = config.title;
             dialog.appendChild(title);
         }
 
         if (config.message) {
             const message = document.createElement('div');
-            message.className = 'message';
+            message.className   = 'message';
             message.textContent = config.message;
             dialog.appendChild(message);
         }
 
-        const values = {};
+        const inputElements = [];
         if (config.inputs) {
-            const inputsContainer = document.createElement('div');
-            inputsContainer.className = 'textfields';
+            const inputContainer = document.createElement('div');
+            inputContainer.className = 'textFields';
 
-            Object.entries(config.inputs).forEach(
-                ([placeholder, input]) => {
-                    const inputEl = document.createElement('input');
-                    if (typeof input === 'object' && input !== null) {
-                        inputEl.type = input.type || 'text';
-                        inputEl.value = input.value || '';
-                    } else {
-                        inputEl.type = 'text';
-                        inputEl.value = input || '';
-                    }
-                    inputEl.placeholder = placeholder;
-                    inputEl.name = placeholder;
-                    inputsContainer.appendChild(inputEl);
-                    values[placeholder] = inputEl;
-                }
-            );
+            for (const name in config.inputs) {
+                const conf = config.inputs[name];
+                
+                const inputEl = document.createElement('input');
+                inputEl.type        = conf?.type ?? 'text';
+                inputEl.value       = conf?.value ?? conf ?? '';
+                inputEl.placeholder = name;
+                inputEl.name        = name;
+                inputContainer.appendChild(inputEl);
+                inputElements.push(inputEl);
+            }
 
-            dialog.appendChild(inputsContainer);
+            dialog.appendChild(inputContainer);
         }
 
         const buttons = (config.buttons ?? [ 'OK' ]).map(conf =>
@@ -243,25 +238,24 @@ class Dialog {
         const buttonContainer = document.createElement('div');
         buttonContainer.className = `buttons ${buttons.length > 2 ? 'stacked' : ''}`;
 
+        const _buttonAction = (buttonValue) => {
+            document.body.removeChild(root);
+            
+            const inputValues = inputElements.reduce(
+                (res, el) => { res[el.name] = el.value; return res },
+            {});
+            
+            buttonAction({
+                button: buttonValue,
+                values: inputValues,
+            });
+        };
+
         buttons.forEach(conf => {
             const buttonEl = document.createElement('button');
             buttonEl.textContent = conf.label;
             buttonEl.className   = `${conf.primary ? 'primary' : ''}`;
-
-            buttonEl.onclick = () => {
-                document.body.removeChild(root);
-                const res = {
-                    button: conf.label,
-                    values: Object.fromEntries(
-                        Object.entries(values).map(([key, input]) => [
-                            key,
-                            input.value,
-                        ])
-                    ),
-                };
-                buttonAction(res);
-            };
-
+            buttonEl.addEventListener('click', () => _buttonAction(conf.label));
             buttonContainer.appendChild(buttonEl);
         });
 
