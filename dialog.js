@@ -1,10 +1,11 @@
-//import { something } from 'https://raw.githubusercontent.com/0bmxa/UserScript/refs/heads/main/extend.js';
+//import * from 'https://raw.githubusercontent.com/0bmxa/UserScript/refs/heads/main/extend.js';
 
 
 class Dialog {
     options = {
         //duration: 300,
         backdropColor: 'rgba(0, 0, 0, 0.4)',
+        align:          'center',
     };
 
     get style() {
@@ -39,29 +40,32 @@ class Dialog {
         .dialog {
             width:          90vw;
             max-width:      500px;
+            max-height:     90vh;
             display:        flex;
             flex-direction: column;
             background:     #f2f2f7;
             border-radius:  10px;
             overflow:       hidden;
+            box-shadow:     0px 3px 8px #000;
             animation:      showDialog 300ms ease-out;
         }
         
         .title {
             margin:     0;
             padding:    16px 16px 0 16px;
-            text-align: center;
             font:       -apple-system-headline;
             font-size:  1.1rem;
+            text-align: ${this.options.align ?? 'none'};
         }
         
         .message {
-            margin: 0;
+            margin:        0;
             margin-bottom: 16px;
-            padding: 0 16px;
-            text-align: center;
-            white-space: pre-wrap;
-            font: -apple-system-body;
+            padding:       0 16px;
+            white-space:   pre-wrap;
+            overflow-y:    scroll;
+            font:          -apple-system-body;
+            text-align:    ${this.options.align ?? 'none'};
         }
         
         .textfields {
