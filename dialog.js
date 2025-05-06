@@ -184,9 +184,6 @@ class Dialog {
         
         //this.#loadDependencies(shadow);
         //this.#loadDependencies(document.head);
-        
-        //_(document.body).appendElement();
-        console.debug(typeof _, _);
 
         const style = document.createElement('style');
         style.textContent = this.style;
