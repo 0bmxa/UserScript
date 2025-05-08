@@ -1,11 +1,22 @@
 class Dialog {
     options = {
-        backdropColor: 'rgba(0, 0, 0, 0.4)',
-        align:         'left',
+        backdrop: {
+            color: 'rgba(0, 0, 0, 0.4)',
+        },
+        title: {
+            align: 'center',
+        },
+        message: {
+            align: 'left',
+            code:  false,
+        },
+        input: {
+            code: false,
+        },
     };
 
     get style() {
-        const options = this.options;
+        const { backdrop, title, message, input } = this.options;
         const { scale, height } = visualViewport.scale;
 
         return `
@@ -19,7 +30,7 @@ class Dialog {
         }
 
         * {
-            font: -apple-system;
+            font: -apple-system-body;
         }
 
         .root {
@@ -35,7 +46,7 @@ class Dialog {
             right:           0;
             display:         flex;
             z-index:         1000;
-            background:      ${options.backdropColor ?? 'none'};
+            background:      ${backdrop.color ?? 'none'};
             justify-content: center;
             align-items:     center;
             animation:       showBackdrop 300ms ease-out;
@@ -65,7 +76,7 @@ class Dialog {
             padding:    16px 16px 0 16px;
             font:       -apple-system-headline;
             font-size:  1.1rem;
-            text-align: center;
+            text-align: ${title.align ?? 'none'};;
         }
 
         .message {
@@ -76,32 +87,31 @@ class Dialog {
             word-wrap:     break-word;
             font:          -apple-system-body;
             line-height:   1.36em;
-            text-align:    ${options.align ?? 'none'};
-
-            &.monospace {
-                font-family: monospace;
-            }
+            text-align:    ${message.align ?? 'none'};
+            ${message.code ? 'font-family: monospace;' : ''}
         }
 
         .textFields {
             padding: 8px 16px;
-        }
 
-        input {
-            box-sizing:    border-box;
-            width:         100%;
-            padding:       8px 12px;
-            margin-bottom: 8px;
-            background:    white;
-            border:        0.5px solid #ccc;
-            border-radius: 8px;
-            font:          -apple-system-body;
+            input {
+                box-sizing:    border-box;
+                width:         100%;
+                padding:       8px 12px;
+                margin-bottom: 8px;
+                background:    white;
+                border:        0.5px solid #ccc;
+                border-radius: 8px;
+                font:          -apple-system-body;
+                ${input.code ? 'font-family: monospace;' : ''}
 
-            @media (prefers-color-scheme: dark) {
-                background: #2c2c2e;
-                color:      #fff;
+                @media (prefers-color-scheme: dark) {
+                    background: #2c2c2e;
+                    color:      #fff;
+                }
             }
         }
+
 
         .buttons {
             --borderColor: rgba(0, 0, 0, 0.15);
@@ -144,40 +154,16 @@ class Dialog {
         `;
     }
 
-    /* #dependencies = [
-        { src: 'https://raw.githubusercontent.com/0bmxa/UserScript/refs/heads/main/extend.js',
-          names: [ 'is' ] },
-    ]; */
-
     constructor(options = {}) {
-        Object.assign(this.options, options);
-        //this.#loadDependencies(document.head);
+        Object.assign(this.options.backdrop, options.backdrop);
+        Object.assign(this.options.title,    options.title);
+        Object.assign(this.options.message,  options.message);
+        Object.assign(this.options.input,    options.input);
     }
 
     open(config) {
         return new Promise(resolve => this.#create(config, resolve));
     }
-
-    /* #loadDependencies(target) {
-        /* this.#dependencies.forEach(src => {
-            const script = document.createElement('script');
-            script.type  = 'module';
-            script.src   = src;
-            script.onLoad  = () => alert('script loaded!');
-            script.onError = () => alert('script loading failed!');
-            target.appendChild(script);
-        }); * /
-
-        for (const dep of this.#dependencies) {
-            const module = await import(dep.src);
-            const keys = dep.keys ?? Object.keys(module);
-            for (const key in module) {
-                const should = dep.keys?.includes(key) ?? true;
-                const name = (key === 'default') ? dep.defaultName : key;
-               Reflect.set(globalThis, name, module[key]);
-            }
-        }
-    } */
 
     #host = null;
     #root = null;
@@ -222,6 +208,9 @@ class Dialog {
                 inputEl.value       = conf?.value ?? conf ?? '';
                 inputEl.placeholder = name;
                 inputEl.name        = name;
+                inputEl.autofocus   = true;
+                inputEl.autocorrect = !this.options.input.code;
+                inputEl.spellcheck  = !this.options.input.code;
                 inputContainer.appendChild(inputEl);
                 inputElements.push(inputEl);
             }
