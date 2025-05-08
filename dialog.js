@@ -42,10 +42,10 @@ class Dialog {
         }
 
         .dialog {
-            width:          calc( 90vw * var(--scale));
-            max-width:      calc(500px * var(--scale));
-            max-height:     calc( 90vh * var(--scale));
-            transform:      scale(calc(1 / var(--scale)));
+            width:          calc( 90vw * var(--viewportScale));
+            max-width:      calc(500px * var(--viewportScale));
+            max-height:     calc( 0.9 * var(--viewportHeight) * var(--viewportScale));
+            transform:      scale(calc(1 / var(--viewportScale)));
             display:        flex;
             flex-direction: column;
             background:     #f2f2f7;
