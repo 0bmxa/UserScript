@@ -14,8 +14,8 @@ class Dialog {
             to   { opacity: 1 }
         }
         @keyframes showDialog {
-            from { opacity: 0; transform: scale(1.2) }
-            to   { opacity: 1; transform: scale(1.0) }
+            from { opacity: 0 }
+            to   { opacity: 1 }
         }
 
         * {
