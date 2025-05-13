@@ -1,5 +1,5 @@
 class Dialog {
-    options = {
+    settings = {
         backdrop: {
             color: 'rgba(0, 0, 0, 0.4)',
         },
@@ -16,7 +16,7 @@ class Dialog {
     };
 
     get style() {
-        const { backdrop, title, message, input } = this.options;
+        const { backdrop, title, message, input } = this.settings;
         const { scale, height } = visualViewport.scale;
 
         return `
@@ -154,11 +154,8 @@ class Dialog {
         `;
     }
 
-    constructor(options = {}) {
-        Object.assign(this.options.backdrop, options.backdrop);
-        Object.assign(this.options.title,    options.title);
-        Object.assign(this.options.message,  options.message);
-        Object.assign(this.options.input,    options.input);
+    constructor(settings = {}) {
+        Object.keys(this.settings).forEach(k => Object.assign(this.settings[k], settings[k]));
     }
 
     open(config) {
@@ -209,8 +206,8 @@ class Dialog {
                 inputEl.placeholder = name;
                 inputEl.name        = name;
                 inputEl.autofocus   = true;
-                inputEl.autocorrect = !this.options.input.code;
-                inputEl.spellcheck  = !this.options.input.code;
+                inputEl.autocorrect = !this.settings.input.code;
+                inputEl.spellcheck  = !this.settings.input.code;
                 inputContainer.appendChild(inputEl);
                 inputElements.push(inputEl);
             }
