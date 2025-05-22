@@ -35,7 +35,7 @@ class Dialog {
 
         .root {
             --viewportScale:  ${scale};
-            --viewportHeight: ${height};
+            --viewportHeight: ${height}px;
         }
 
         .backdrop {
@@ -260,7 +260,7 @@ class Dialog {
 
     #onResize() {
         this.#root?.style.setProperty('--viewportScale',  visualViewport.scale);
-        this.#root?.style.setProperty('--viewportHeight', visualViewport.height);
+        this.#root?.style.setProperty('--viewportHeight', `${visualViewport.height}px`);
     }
 }
 
