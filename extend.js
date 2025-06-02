@@ -246,38 +246,24 @@ Extensions.Object = {
         Object.entries(this).forEach(([key, value], index) => body(key, value, index));
     },
     
-    mapArray(transform) {
-        const entries = Object.entries(this);
-        return entries.map(([key, value], index) => transform(key, value, index));
+    mapArray(body) {
+        return Object.entries(this).map(([key, value], index) => body(key, value, index));
     },
 
-    mapKeys(transform) {
-        const transformed = _(this).mapArray((key, value, index) => [transform(key, value, index), value]);
+    mapKeys(body) {
+        const transformed = _(this).mapArray((key, value, index) => [body(key, value, index), value]);
         return Object.fromEntries(transformed);
     },
 
-    mapValues(transform) {
-        const transformed = _(this).mapArray((key, value, index) => [key, transform(value, key, index)]);
+    mapValues(body) {
+        const transformed = _(this).mapArray((key, value, index) => [key, body(value, key, index)]);
         return Object.fromEntries(transformed);
     },
 
     join(kvSep = ': ', entrySep = '\n') {
-        return _(this).mapArray((k,v) => `${k}${kvSep}${v}`)
+        return _(this).mapArray((key, value) => `${key}${kvSep}${value}`)
             .join(entrySep);
     },
-
-    /*
-    __diff(other, keyNames = ['A', 'B']) {
-        const allKeys = Array.from(new Set([...Object.keys(this), ...Object.keys(other)]));
-
-        const [keyA, keyB] = keyNames;
-        const diffPairs = _(allKeys).filterMap(
-            (key) => this[key] !== other[key],
-            (key) => [key, { [keyA]: this[key], [keyB]: other[key] }]
-        )
-        return Object.fromEntries(diffPairs);
-    },
-    */
 };
 
 
@@ -417,24 +403,24 @@ Extensions.Document = {
     /// Usage:
     /// - _(document).addStyleSheet({ img: { margin: '10px' } });
     addStyleSheet(rules = {}) {
-        const sheet = new CSSStyleSheet();
-        _(rules).mapArray((selector, style, index) => {
-            const kebabStyle = _(style).mapKeys(key => _(key).kebabFromCamelCase());
-            const styleStr   = _(kebabStyle).join(': ', '; ');
-            const ruleStr    = `${selector} { ${styleStr} }`;
-            sheet.insertRule(ruleStr, index);
-        });
+        const sheet = (is(this.adoptedStyleSheets?.push) ?
+            this.adoptedStyleSheets.at(this.adoptedStyleSheets.push(new CSSStyleSheet()) - 1) :
+            _(this.documentElement).appendElement('style', { type: 'text/css' }).sheet
+        );
 
-        let element = null, adoptedIndex = null;
-        if (is(this.adoptedStyleSheets.push)) {
-            const length = this.adoptedStyleSheets.push(sheet);
-            adoptedIndex = length - 1;
-        } else {
-            const cssString = Array.from(sheet.cssRules).map(rule => rule.cssText).join('\n');
-            element = _(this.firstChild).appendElement('style', { innerHTML: cssString, type: 'text/css' });
-        }
-        
-        return { sheet, element, adoptedIndex };
+        const Declaration = (property, value) => `${_(property).kebabFromCamelCase()}: ${value};`;
+        const Rule = (selector, styleObj) => [
+            `${selector} { `,
+                ...(_(styleObj).mapArray((k, v) => is.obj(v) ? Rule(k, v) : Declaration(k, v))),
+            `}`,
+        ].join('');
+
+        _(rules).forEach((selector, styleObj, index) =>
+            sheet.insertRule(Rule(selector, styleObj), index)
+        );
+
+        const adoptedIndex = this.adoptedStyleSheets?.findIndex(s => s === sheet) ?? null;
+        return { sheet, element: sheet.ownerNode, adoptedIndex };
     },
 };
 
