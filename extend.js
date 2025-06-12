@@ -405,7 +405,7 @@ Extensions.Document = {
     addStyleSheet(rules = {}) {
         const sheet = (is(this.adoptedStyleSheets?.push) ?
             this.adoptedStyleSheets.at(this.adoptedStyleSheets.push(new CSSStyleSheet()) - 1) :
-            _(this.documentElement).appendElement('style', { type: 'text/css' }).sheet
+            _(this.documentElement ?? this).appendElement('style', { type: 'text/css' }).sheet
         );
 
         const Declaration = (property, value) => `${_(property).kebabFromCamelCase()}: ${value};`;
