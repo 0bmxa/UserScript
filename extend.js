@@ -419,7 +419,7 @@ Extensions.Document = {
             sheet.insertRule(Rule(selector, styleObj), index)
         );
 
-        const adoptedIndex = this.adoptedStyleSheets?.findIndex(s => s === sheet) ?? null;
+        const adoptedIndex = this.adoptedStyleSheets?.findIndex?.(s => s === sheet) ?? null;
         return { sheet, element: sheet.ownerNode, adoptedIndex };
     },
 };
