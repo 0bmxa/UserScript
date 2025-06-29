@@ -1,3 +1,37 @@
+/**
+ * General styling settings.
+ * @typedef {Object} Settings
+ * @property {{ color: string }}                backdrop - 
+ * @property {{ align: string }}                title    - 
+ * @property {{ align: string, code: boolean }} message  - 
+ * @property {{ code: boolean }}                input    - 
+ *
+ */
+
+/**
+ * @typedef {string} Name
+ * @typedef {string} Value
+ *
+ * @typedef {Value|{ value: Value, type: string|undefined }} Input
+ * @typedef {Object.<Name, Input>} Inputs
+ * 
+ * @typedef {Name|{ label: Name, primary: boolean }} Button
+ *
+ * @typedef {{ button: Name, values: Value[] }} ActionData
+ * @typedef {(ActionData) => ({ close: boolean })} Action
+ *
+ * An individual dialog's configuration.
+ * @typedef {Object} Config
+ * @property {string}   title          - 
+ * @property {string}   message        - 
+ * @property {Inputs}   [inputs]       - 
+ * @property {Button[]} [buttons]      - 
+ * @property {Action}   [buttonAction] - 
+ *
+ */
+
+
+
 class Dialog {
     settings = {
         backdrop: {
@@ -153,19 +187,21 @@ class Dialog {
         }
         `;
     }
+    
+    #host = null;
+    #root = null;
 
     constructor(settings = {}) {
         Object.keys(this.settings).forEach(k => Object.assign(this.settings[k], settings[k]));
     }
 
-    open(config) {
-        return new Promise(resolve => this.#create(config, resolve));
+    async open(config) {
+        return await this.#create(config);
     }
 
-    #host = null;
-    #root = null;
 
-    async #create(config, buttonAction) {
+
+    async #create(config) {
         this.#host   = document.createElement('div');
         const shadow = this.#host.attachShadow({ mode: 'open' });
 
@@ -201,7 +237,7 @@ class Dialog {
                 const conf = config.inputs[name];
 
                 const inputEl = document.createElement('input');
-                inputEl.type        = conf?.type ?? 'text';
+                inputEl.type        = conf?.type  ?? 'text';
                 inputEl.value       = conf?.value ?? conf ?? '';
                 inputEl.placeholder = name;
                 inputEl.name        = name;
@@ -223,25 +259,32 @@ class Dialog {
         buttonContainer.className = `buttons ${buttons.length > 2 ? 'stacked' : ''}`;
 
         const _buttonAction = (buttonValue) => {
-            this.#close();
-
-            const inputValues = inputElements.reduce(
-                (res, el) => { res[el.name] = el.value; return res },
-            {});
-
-            buttonAction({
-                button: buttonValue,
-                values: inputValues,
-            });
+            let shouldClose = true;
+            
+            if (config.buttonAction) {
+                const payload = {
+                    button: buttonValue,
+                    values: Object.fromEntries(
+                        inputElements.map(el => [el.name, el.value])
+                    ),
+                };
+                
+                const res = config.buttonAction(payload);
+                shouldClose = (res?.close === true);
+            }
+            
+            if (shouldClose) {
+                this.#close();
+            }
         };
 
-        buttons.forEach(conf => {
+        for (const conf of buttons) {
             const buttonEl = document.createElement('button');
             buttonEl.textContent = conf.label;
             buttonEl.className   = `${conf.primary ? 'primary' : ''}`;
             buttonEl.addEventListener('click', () => _buttonAction(conf.label));
             buttonContainer.appendChild(buttonEl);
-        });
+        }
 
         dialog.appendChild(buttonContainer);
         this.#root.appendChild(dialog);
